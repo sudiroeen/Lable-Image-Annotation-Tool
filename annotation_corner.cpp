@@ -8,11 +8,6 @@ using namespace cv;
 typedef vector<Point> Points;
 Points getCorners;
 
-stringstream ss2;
-
-string name_foto = "PetaTugasTKTE/DI_Yogyakarta.png";
-Mat foto_peta = imread(name_foto);
-
 static void onMouse(int event, int x, int y, int flags, void* userdata){
 	if(event == EVENT_LBUTTONDOWN){
 		getCorners.emplace_back(Point(x,y));
@@ -22,11 +17,20 @@ static void onMouse(int event, int x, int y, int flags, void* userdata){
 	}
 }
 
-int main(){
-	ss2 << "PetaTugasTKTE/DI_Yogyakarta";
+int main(int argc, char** argv){
+	const String keys= "{name_img | | name of image to be annotated}"
+						"{name_yaml | | name of yaml file to store annotated data}";
+
+	CommandLineParser parser(argc, argv, keys);
+
+	string name_foto = parser.get<string>("name_img");
+	cout << "name_foto: " << name_foto << endl;
+
+	Mat foto_peta = imread(name_foto);
+	string name_yaml =  parser.get<string>("name_yaml");
 
 	vector<Mat> MatBuffer;
-	FileStorage fsBuffer(ss2.str() + ".yaml", FileStorage::READ);
+	FileStorage fsBuffer(name_yaml, FileStorage::READ);
 
 	int wilayah;
 	fsBuffer["nwilayah"] >> wilayah;
@@ -56,7 +60,7 @@ int main(){
 			Mat matCorner = Mat(getCorners.size(),2,CV_32S,getCorners.data());
 			MatBuffer.emplace_back(matCorner);
 
-			FileStorage fs(ss2.str() + ".yaml", FileStorage::WRITE);
+			FileStorage fs(name_yaml, FileStorage::WRITE);
 			for(int q=0; q<MatBuffer.size(); q++){
 				stringstream ss;
 				ss << q;
@@ -71,7 +75,7 @@ int main(){
 
 	Mat putih(foto_peta.size(), CV_8UC3, Scalar::all(255));
 
-	FileStorage fsload(ss2.str() + ".yaml", FileStorage::READ);
+	FileStorage fsload(name_yaml, FileStorage::READ);
 	for(int l=0; l<MatBuffer.size(); l++){
 		Mat korner;
 
